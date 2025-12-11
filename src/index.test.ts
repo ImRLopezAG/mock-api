@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import qs from 'qs'
-import app  from './index'
+import app from './index'
 
 describe('Mock API Generator', () => {
 	const HOST = 'http://localhost:3000'
 	const HOST_API = `${HOST}/api`
-	
+
 	describe('GET /types', () => {
 		it('should return all supported types', async () => {
 			const response = await app.handle(new Request(`${HOST_API}/types`))
