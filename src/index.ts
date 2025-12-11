@@ -138,7 +138,7 @@ const api = new Elysia({ prefix: '/api' })
 			},
 		},
 	)
-export const app = new Elysia()
+const app = new Elysia()
 	.use(
 		openapi({
 			path: '/spec',
@@ -185,8 +185,9 @@ export const app = new Elysia()
 	.use(api)
 	.listen(3000)
 
+
 console.log(
 	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
 )
 
-export type App = typeof app
+export default app
