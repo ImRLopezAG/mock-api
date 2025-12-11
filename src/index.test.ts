@@ -1,24 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import qs from 'qs'
-import { app } from './index'
+import app  from './index'
 
 describe('Mock API Generator', () => {
 	const HOST = 'http://localhost:3000'
 	const HOST_API = `${HOST}/api`
-	describe('GET /', () => {
-		it('should return API documentation', async () => {
-			const response = await app.handle(new Request(`${HOST}/`))
-
-			expect(response.status).toBe(200)
-			const json = await response.json()
-
-			expect(json).toHaveProperty('message')
-			expect(json.message).toBe('Mock Data Generator API')
-			expect(json).toHaveProperty('documentation')
-			expect(json.documentation).toContain('/swagger')
-		})
-	})
-
+	
 	describe('GET /types', () => {
 		it('should return all supported types', async () => {
 			const response = await app.handle(new Request(`${HOST_API}/types`))

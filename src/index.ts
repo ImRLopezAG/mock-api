@@ -168,20 +168,6 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.get(
-		'/',
-		() => ({
-			message: 'Mock Data Generator API',
-			documentation: 'Visit /swagger for interactive API documentation',
-		}),
-		{
-			detail: {
-				summary: 'API Root',
-				description: 'Welcome endpoint with API information',
-				tags: ['Info'],
-			},
-		},
-	)
 	.use(api)
 	.listen(3000)
 

@@ -32,7 +32,7 @@ The server runs at `http://localhost:3000`
 ### Access OpenAPI Documentation
 
 Once the server is running, visit the interactive Swagger UI at:
-- **Swagger UI**: http://localhost:3000/swagger (recommended)
+- **Swagger UI**: http://localhost:3000/spec (recommended)
 - **API Root**: http://localhost:3000/
 
 ## API Endpoints
