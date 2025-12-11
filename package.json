@@ -2,11 +2,17 @@
   "name": "mock-api",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@elysiajs/openapi": "^1.4.11",
+    "@faker-js/faker": "^10.1.0",
+    "@types/qs": "^6.14.0",
+    "elysia": "latest",
+    "qs": "^6.14.0",
+    "superjson": "^2.2.6",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "bun-types": "latest"
