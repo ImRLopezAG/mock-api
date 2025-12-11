@@ -168,9 +168,9 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.get('/', (c) => c.redirect('/spec'))
 	.use(api)
 	.listen(3000)
-
 
 console.log(
 	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
