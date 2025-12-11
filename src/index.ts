@@ -54,12 +54,12 @@ const api = new Elysia({ prefix: '/api' })
 					count: parsedWithQS.count
 						? parseInt(String(parsedWithQS.count), 10)
 						: query.count
-							? parseInt(query.count as string, 10)
+							? Number.parseInt(query.count, 10)
 							: 10,
 					seed: parsedWithQS.seed
 						? parseInt(String(parsedWithQS.seed), 10)
 						: query.seed
-							? parseInt(query.seed as string, 10)
+							? Number.parseInt(query.seed, 10)
 							: undefined,
 				})
 
@@ -120,6 +120,100 @@ const api = new Elysia({ prefix: '/api' })
 			},
 		},
 	)
+	.post(
+		'/generate',
+		async ({ query, body }) => {
+			try {
+				let fields: FieldDefinition[]
+
+				if (body?.fields && Array.isArray(body.fields)) {
+					fields = normalizeFields(body.fields)
+				} else if (body && typeof body.fields === 'string') {
+					try {
+						fields = JSON.parse(body.fields)
+					} catch {
+						throw new Error('Invalid fields format. Must be a JSON array.')
+					}
+				} else {
+					// No or invalid body, fall back to normal query parsing
+					const rawQueryString = Object.entries(query)
+						.map(
+							([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+						)
+						.join('&')
+
+					const parsedWithQS = qs.parse(rawQueryString)
+
+					if (parsedWithQS.fields && Array.isArray(parsedWithQS.fields)) {
+						fields = normalizeFields(parsedWithQS.fields as unknown[])
+					} else {
+						const fieldsQuery = query.fields as string | unknown
+
+						if (typeof fieldsQuery === 'string') {
+							try {
+								fields = JSON.parse(fieldsQuery)
+							} catch {
+								throw new Error('Invalid fields format. Must be a JSON array.')
+							}
+						} else {
+							fields = fieldsQuery as FieldDefinition[]
+						}
+					}
+				}
+
+				if (!Array.isArray(fields)) {
+					throw new Error('Invalid fields format. Must be a JSON array.')
+				}
+
+				// Determine count and seed from body (preferred) or query
+				const countValue =
+					body && body.count !== undefined
+						? Number(body.count)
+						: query.count
+							? parseInt(query.count as string, 10)
+							: 10
+				const seedValue =
+					body && body.seed !== undefined
+						? Number(body.seed)
+						: query.seed
+							? parseInt(query.seed as string, 10)
+							: undefined
+
+				// Validate query params
+				const validatedParams = queryParamsSchema.parse({
+					fields,
+					count: countValue,
+					seed: seedValue,
+				})
+
+				// Generate mock data
+				const data = generateMockData(validatedParams)
+
+				return serializeResponse({
+					success: true,
+					count: data.length,
+					data,
+				})
+			} catch (error) {
+				const errorMessage =
+					error instanceof z.ZodError ? z.treeifyError(error) : String(error)
+				return serializeResponse({
+					success: false,
+					error: 'Failed to generate mock data',
+					details: errorMessage,
+				})
+			}
+		},
+		{
+			detail: {
+				summary: 'Generate Mock Data (POST)',
+				description:
+					'Generate mock data based on field definitions passed in the request body as JSON. Request body follows the same schema as the query params.',
+				tags: ['Data Generation'],
+			},
+			body: queryParamsSchema,
+		},
+	)
 	.get(
 		'/types',
 		() => {
@@ -138,6 +232,7 @@ const api = new Elysia({ prefix: '/api' })
 			},
 		},
 	)
+
 const app = new Elysia()
 	.use(
 		openapi({
@@ -168,9 +263,13 @@ const app = new Elysia()
 			},
 		}),
 	)
-	
+	.get('/', (c) => c.redirect('/spec'), {
+		detail: {
+			hide: true,
+		},
+	})
 	.use(api)
-	.listen(3000)
+	.listen(3001)
 
 console.log(
 	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,

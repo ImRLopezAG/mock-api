@@ -344,6 +344,7 @@ describe('Mock API Generator', () => {
 				new Request(`${HOST_API}/generate?fields=invalid&count=5`),
 			)
 
+			// With query parsing the handler returns a 200 with error details
 			expect(response.status).toBe(200)
 			const json = await response.json()
 
@@ -985,6 +986,81 @@ describe('Mock API Generator', () => {
 				expect(typeof row.code).toBe('string')
 				expect(row.code.length).toBe(8)
 			}
+		})
+	})
+
+	describe('POST /generate', () => {
+		it('should generate data with uuid field from JSON body', async () => {
+			const payload = { fields: [{ name: 'id', type: 'uuid' }] }
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(payload),
+				}),
+			)
+
+			expect(response.status).toBe(200)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			expect(json.count).toBe(10)
+			expect(Array.isArray(json.data)).toBe(true)
+			expect(json.data.length).toBe(10)
+			expect(json.data[0]).toHaveProperty('id')
+		})
+
+		it('should respect custom count parameter in request body', async () => {
+			const payload = { fields: [{ name: 'id', type: 'uuid' }], count: 5 }
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(payload),
+				}),
+			)
+
+			expect(response.status).toBe(200)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			expect(json.count).toBe(5)
+			expect(json.data.length).toBe(5)
+		})
+
+		it('should accept non-string fields array in body', async () => {
+			const payload = { fields: [{ name: 'email', type: 'email' }], count: 2 }
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(payload),
+				}),
+			)
+
+			expect(response.status).toBe(200)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			expect(json.data[0]).toHaveProperty('email')
+			expect(json.data[0].email).toMatch(/@/)
+		})
+
+		it('should fail with invalid fields format in body', async () => {
+			const payload = { fields: 'invalid', count: 5 }
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(payload),
+				}),
+			)
+
+			expect(response.status).toBe(422)
+			const json = await response.json()
+
+			expect(json).toHaveProperty('message')
+			expect(json.message).toContain('Invalid input')
 		})
 	})
 })
