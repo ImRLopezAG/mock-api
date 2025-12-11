@@ -1,11 +1,11 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "elysia",
-  "bunVersion": "1.x",
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/spec"
-    }
-  ]
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"framework": "elysia",
+	"bunVersion": "1.x",
+	"rewrites": [
+		{
+			"source": "/",
+			"destination": "/spec"
+		}
+	]
 }

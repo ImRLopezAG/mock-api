@@ -34,10 +34,9 @@ export const SUPPORTED_TYPES = [
 	'word',
 ] as const
 
-
 export interface FieldDefinition {
 	name: string
-	type: typeof SUPPORTED_TYPES[number]
+	type: (typeof SUPPORTED_TYPES)[number]
 	related?: string
 	values?: (string | number | boolean)[]
 	min?: number
@@ -228,7 +227,7 @@ export function normalizeFields(fields: unknown[]): FieldDefinition[] {
 		const f = field as Record<string, unknown>
 		return {
 			name: f.name as string,
-			type: f.type as typeof SUPPORTED_TYPES[number],
+			type: f.type as (typeof SUPPORTED_TYPES)[number],
 			related: f.related ? String(f.related) : undefined,
 			values: f.values
 				? Array.isArray(f.values)

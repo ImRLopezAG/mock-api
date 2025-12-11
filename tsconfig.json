@@ -13,16 +13,15 @@
 		"isolatedModules": true,
 		"jsx": "react-jsx",
 		"incremental": true,
-    "types": ["bun-types"],
+		"types": ["bun-types"],
 		"plugins": [
 			{
 				"name": "next"
 			}
 		],
 		"paths": {
-			"@/*": ["./src/*"],
+			"@/*": ["./src/*"]
 		}
 	},
 	"exclude": ["node_modules"]
-  
 }
