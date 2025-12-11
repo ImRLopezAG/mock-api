@@ -168,11 +168,7 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.get('/', (c) => c.redirect('/spec'), {
-		detail: {
-			hide: true,
-		}
-	})
+	
 	.use(api)
 	.listen(3000)
 
