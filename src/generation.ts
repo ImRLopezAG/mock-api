@@ -30,6 +30,7 @@ export const SUPPORTED_TYPES = [
 	'latitude',
 	'longitude',
 	'sentence',
+	'sentences',
 	'paragraph',
 	'paragraphs',
 	'word',
@@ -175,12 +176,21 @@ function generateFieldValue(field: FieldDefinition): unknown {
 			return faker.location.longitude()
 		case 'sentence':
 			return faker.lorem.sentence()
+		case 'sentences':
+			// Generate an array of sentences. Use min/max if provided (defaults to 2-4)
+			return faker.helpers.arrayElements(
+				Array.from({ length: length || 5 }, () => faker.lorem.sentence()),
+				{
+					min: min || 2,
+					max: max || 4,
+				},
+			)
 		case 'paragraph':
 			return faker.lorem.paragraph()
 		case 'paragraphs':
 			// Generate an array of paragraphs. Use min/max if provided (defaults to 2-4)
 			return faker.helpers.arrayElements(
-				Array.from({ length: 5 }, () => faker.lorem.paragraph()),
+				Array.from({ length: length || 5 }, () => faker.lorem.paragraph()),
 				{
 					min: min || 2,
 					max: max || 4,

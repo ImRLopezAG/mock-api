@@ -548,6 +548,42 @@ describe('Mock API Generator', () => {
 			})
 		})
 
+		it('should generate sentences arrays with default min/max', async () => {
+			const qsFields = qs.stringify({
+				fields: [{ name: 'paras', type: 'sentences' }],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=3&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			json.data.forEach((row: any) => {
+				expect(Array.isArray(row.paras)).toBe(true)
+				expect(row.paras.length).toBeGreaterThanOrEqual(2)
+				expect(row.paras.length).toBeLessThanOrEqual(4)
+				row.paras.forEach((p: any) => expect(typeof p).toBe('string'))
+			})
+		})
+
+		it('should respect min/max for sentences arrays', async () => {
+			const qsFields = qs.stringify({
+				fields: [{ name: 'paras', type: 'sentences', min: 1, max: 1 }],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=2&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			json.data.forEach((row: any) => {
+				expect(Array.isArray(row.paras)).toBe(true)
+				expect(row.paras.length).toBe(1)
+			})
+		})
+
 		it('should generate business fields', async () => {
 			const fields = encodeURIComponent(
 				JSON.stringify([
