@@ -31,6 +31,7 @@ export const SUPPORTED_TYPES = [
 	'longitude',
 	'sentence',
 	'paragraph',
+	'paragraphs',
 	'word',
 ] as const
 
@@ -176,6 +177,15 @@ function generateFieldValue(field: FieldDefinition): unknown {
 			return faker.lorem.sentence()
 		case 'paragraph':
 			return faker.lorem.paragraph()
+		case 'paragraphs':
+			// Generate an array of paragraphs. Use min/max if provided (defaults to 2-4)
+			return faker.helpers.arrayElements(
+				Array.from({ length: 5 }, () => faker.lorem.paragraph()),
+				{
+					min: min || 2,
+					max: max || 4,
+				},
+			)
 		case 'word':
 			return faker.lorem.word()
 		default:
