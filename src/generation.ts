@@ -201,12 +201,6 @@ export function generateMockData(
 		// If a default value is explicitly provided, use that for all rows
 		if (field.default !== undefined) {
 			sameValues[field.name] = field.default
-			continue
-		}
-
-		// Default behavior: fields ending with 'Id' get a single shared value
-		if (/id$/i.test(String(field.name))) {
-			sameValues[field.name] = generateFieldValue(field)
 		}
 	}
 

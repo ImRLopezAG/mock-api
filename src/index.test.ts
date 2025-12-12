@@ -436,24 +436,6 @@ describe('Mock API Generator', () => {
 			expect(new Set(orgs).size).toBeGreaterThan(1)
 		})
 
-		it('should default to a shared value for fields ending with Id', async () => {
-			const qsFields = qs.stringify({
-				fields: [
-					{ name: 'organizationId', type: 'string' },
-					{ name: 'id', type: 'uuid' },
-				],
-			})
-
-			const response = await app.handle(
-				new Request(`${HOST_API}/generate?${qsFields}&count=5&seed=123`),
-			)
-			const json = await response.json()
-
-			expect(json.success).toBe(true)
-			const orgIds = json.data.map((d: any) => d.organizationId)
-			expect(orgIds.every((v: any) => v === orgIds[0])).toBe(true)
-		})
-
 		it('should not default for non-Id fields', async () => {
 			const qsFields = qs.stringify({
 				fields: [
