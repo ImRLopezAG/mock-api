@@ -386,22 +386,90 @@ describe('Mock API Generator', () => {
 		})
 
 		it('should generate different data with different seeds', async () => {
-			const fields = encodeURIComponent(
-				JSON.stringify([{ name: 'id', type: 'uuid' }]),
-			)
+			const qsFields = qs.stringify({ fields: [{ name: 'org', type: 'string', default: 'val' }] })
 
 			const response1 = await app.handle(
-				new Request(`${HOST_API}/generate?fields=${fields}&seed=123`),
+				new Request(`${HOST_API}/generate?${qsFields}`),
 			)
 			const json1 = await response1.json()
 
 			const response2 = await app.handle(
-				new Request(`${HOST_API}/generate?fields=${fields}&seed=123`),
+				new Request(`${HOST_API}/generate?${qsFields}`),
 			)
 			const json2 = await response2.json()
 
 			// Same seed should produce same data
 			expect(json1.data[0].id).toBe(json2.data[0].id)
+		})
+
+		it('should use provided default value for fields', async () => {
+			const qsFields = qs.stringify({
+				fields: [
+					{ name: 'organizationId', type: 'string', default: 'org-abc' },
+					{ name: 'id', type: 'uuid' },
+				],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=5&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			const orgIds = json.data.map((d: any) => d.organizationId)
+			expect(orgIds.every((v: any) => v === 'org-abc')).toBe(true)
+		})
+
+		it('should produce different values for fields without default', async () => {
+			const qsFields = qs.stringify({
+				fields: [{ name: 'organization', type: 'uuid' }],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=5&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			const orgs = json.data.map((d: any) => d.organization)
+			// Expect at least two different values (very high probability)
+			expect(new Set(orgs).size).toBeGreaterThan(1)
+		})
+
+		it('should default to a shared value for fields ending with Id', async () => {
+			const qsFields = qs.stringify({
+				fields: [
+					{ name: 'organizationId', type: 'string' },
+					{ name: 'id', type: 'uuid' },
+				],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=5&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			const orgIds = json.data.map((d: any) => d.organizationId)
+			expect(orgIds.every((v: any) => v === orgIds[0])).toBe(true)
+		})
+
+		it('should not default for non-Id fields', async () => {
+			const qsFields = qs.stringify({
+				fields: [
+					{ name: 'organization', type: 'string' },
+					{ name: 'id', type: 'uuid' },
+				],
+			})
+
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?${qsFields}&count=5&seed=123`),
+			)
+			const json = await response.json()
+
+			expect(json.success).toBe(true)
+			const orgs = json.data.map((d: any) => d.organization)
+			expect(new Set(orgs).size).toBeGreaterThan(1)
 		})
 
 		it('should generate composite fields with all types', async () => {

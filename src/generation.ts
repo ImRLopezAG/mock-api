@@ -38,6 +38,8 @@ export interface FieldDefinition {
 	name: string
 	type: (typeof SUPPORTED_TYPES)[number]
 	related?: string
+	// Optional default value to use for every row
+	default?: string | number | boolean
 	values?: (string | number | boolean)[]
 	min?: number
 	max?: number
@@ -56,6 +58,7 @@ export const fieldDefinitionSchema = z.object({
 	name: z.string().min(1, 'Field name is required'),
 	type: z.enum(SUPPORTED_TYPES),
 	related: z.string().optional(),
+	default: z.union([z.string(), z.number(), z.boolean()]).optional(),
 	values: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
 	min: z.number().optional(),
 	max: z.number().optional(),
@@ -67,6 +70,7 @@ export const fieldDefinitionSchemaStrings = z.object({
 	name: z.string().min(1, 'Field name is required'),
 	type: z.enum(SUPPORTED_TYPES),
 	related: z.string().optional(),
+	default: z.string().optional(),
 	values: z.array(z.union([z.string(), z.boolean()])).optional(),
 	min: z.string().optional(),
 	max: z.string().optional(),
@@ -86,7 +90,8 @@ function generateFieldValue(field: FieldDefinition): unknown {
 
 	// Handle enum type
 	if (type === 'enum' && values && values.length > 0) {
-		return values[Math.floor(Math.random() * values.length)]
+		// Use Faker helper so that selection is seeded when faker.seed() is used
+		return faker.helpers.arrayElement(values)
 	}
 
 	// Handle related (faker API path)
@@ -190,10 +195,29 @@ export function generateMockData(
 
 	const results: Record<string, unknown>[] = []
 
+	// Pre-generate values for fields that should be the same across all rows
+	const sameValues: Record<string, unknown> = {}
+	for (const field of fields) {
+		// If a default value is explicitly provided, use that for all rows
+		if (field.default !== undefined) {
+			sameValues[field.name] = field.default
+			continue
+		}
+
+		// Default behavior: fields ending with 'Id' get a single shared value
+		if (/id$/i.test(String(field.name))) {
+			sameValues[field.name] = generateFieldValue(field)
+		}
+	}
+
 	for (let i = 0; i < count; i++) {
 		const row: Record<string, unknown> = {}
 		for (const field of fields) {
-			row[field.name] = generateFieldValue(field)
+			if (field.name in sameValues) {
+				row[field.name] = sameValues[field.name]
+			} else {
+				row[field.name] = generateFieldValue(field)
+			}
 		}
 		results.push(row)
 	}
@@ -205,10 +229,17 @@ export function generateMockData(
 export function normalizeFields(fields: unknown[]): FieldDefinition[] {
 	return fields.map((field: unknown) => {
 		const f = field as Record<string, unknown>
+		const nameStr = f.name as string
 		return {
-			name: f.name as string,
+			name: nameStr,
 			type: f.type as (typeof SUPPORTED_TYPES)[number],
 			related: f.related ? String(f.related) : undefined,
+			default:
+				f.default === null || typeof f.default === 'object'
+					? undefined
+					: f.default !== undefined
+						? (f.default as string | number | boolean)
+						: undefined,
 			values: f.values
 				? Array.isArray(f.values)
 					? f.values

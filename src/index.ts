@@ -1,4 +1,5 @@
 import { openapi } from '@elysiajs/openapi'
+import { logger } from '@chneau/elysia-logger'
 import { Elysia } from 'elysia'
 import qs from 'qs'
 import { z } from 'zod'
@@ -10,7 +11,6 @@ import {
 	SUPPORTED_TYPES,
 	serializeResponse,
 } from './generation'
-import { logger } from '@grotto/logysia';
 
 const api = new Elysia({ prefix: '/api' })
 	.get(
@@ -44,6 +44,9 @@ const api = new Elysia({ prefix: '/api' })
 						fields = fieldsQuery as FieldDefinition[]
 					}
 				}
+
+				// Ensure fields are normalized (convert numeric strings and set defaults)
+				fields = normalizeFields(fields as unknown[])
 
 				if (!Array.isArray(fields)) {
 					throw new Error('Invalid fields format. Must be a JSON array.')
@@ -160,6 +163,9 @@ const api = new Elysia({ prefix: '/api' })
 							fields = fieldsQuery as FieldDefinition[]
 						}
 					}
+
+					// Ensure fields are normalized (convert numeric strings and set defaults)
+					fields = normalizeFields(fields as unknown[])
 				}
 
 				if (!Array.isArray(fields)) {
@@ -264,7 +270,7 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.use(logger())
+	.use(logger() as Elysia)
 	.get('/', (c) => c.redirect('/spec'), {
 		detail: {
 			hide: true,
