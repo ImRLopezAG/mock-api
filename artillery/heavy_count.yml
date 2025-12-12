@@ -1,0 +1,18 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: heavy-count
+    flow:
+      - post:
+          url: "/api/generate"
+          json:
+            fields:
+              - name: id
+                type: uuid
+            count: 2000

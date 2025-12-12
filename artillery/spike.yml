@@ -1,0 +1,24 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 10
+      arrivalRate: 1
+    - duration: 30
+      arrivalRate: 300
+    - duration: 30
+      arrivalRate: 1
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: spike
+    flow:
+      - get:
+          url: "/api/generate?fields=[{\"name\":\"id\",\"type\":\"uuid\"}]&count=100"
+      - post:
+          url: "/api/generate"
+          json:
+            fields:
+              - name: email
+                type: email
+            count: 150

@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+    - duration: 60
+      arrivalRate: 50
+    - duration: 180
+      arrivalRate: 150
+    - duration: 180
+      arrivalRate: 300
+    - duration: 60
+      arrivalRate: 0
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: mixed-traffic
+    flow:
+      - get:
+          url: "/api/types"
+      - get:
+          url: "/api/generate?fields=[{\"name\":\"id\",\"type\":\"uuid\"}]&count=10"
+      - post:
+          url: "/api/generate"
+          json:
+            fields:
+              - name: email
+                type: email
+            count: 20

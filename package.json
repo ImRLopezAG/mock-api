@@ -5,11 +5,20 @@
 	"scripts": {
 		"test": "bun test",
 		"dev": "bun run --watch src/index.ts",
-		"lint": "biome check --write --unsafe ."
+		"lint": "biome check --write --unsafe .",
+		"atr:stress": "bun x artillery run artillery/stress.yml",
+		"atr:soak": "bun x artillery run artillery/soak.yml",
+		"atr:spike": "bun x artillery run artillery/spike.yml",
+		"atr:heavy": "bun x artillery run artillery/heavy_count.yml",
+		"atr:stress:docker": "docker run --rm -v $(pwd):/scripts -w /scripts artilleryio/artillery run artillery/stress.yml",
+		"atr:soak:docker": "docker run --rm -v $(pwd):/scripts -w /scripts artilleryio/artillery run artillery/soak.yml",
+		"atr:spike:docker": "docker run --rm -v $(pwd):/scripts -w /scripts artilleryio/artillery run artillery/spike.yml",
+		"atr:heavy:docker": "docker run --rm -v $(pwd):/scripts -w /scripts artilleryio/artillery run artillery/heavy_count.yml"
 	},
 	"dependencies": {
 		"@elysiajs/openapi": "^1.4.11",
 		"@faker-js/faker": "^10.1.0",
+		"@grotto/logysia": "^0.1.6",
 		"@types/qs": "^6.14.0",
 		"elysia": "latest",
 		"qs": "^6.14.0",
@@ -17,7 +26,8 @@
 		"zod": "^4.1.13"
 	},
 	"devDependencies": {
-		"bun-types": "latest"
+		"bun-types": "latest",
+		"artillery": "latest"
 	},
 	"module": "src/index.js"
 }

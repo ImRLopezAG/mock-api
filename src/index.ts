@@ -10,6 +10,7 @@ import {
 	SUPPORTED_TYPES,
 	serializeResponse,
 } from './generation'
+import { logger } from '@grotto/logysia';
 
 const api = new Elysia({ prefix: '/api' })
 	.get(
@@ -263,6 +264,7 @@ const app = new Elysia()
 			},
 		}),
 	)
+	.use(logger())
 	.get('/', (c) => c.redirect('/spec'), {
 		detail: {
 			hide: true,

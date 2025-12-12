@@ -27,13 +27,13 @@ Start the development server:
 bun run dev
 ```
 
-The server runs at `http://localhost:3000`
+The server runs at `http://localhost:3001`
 
 ### Access OpenAPI Documentation
 
 Once the server is running, visit the interactive Swagger UI at:
-- **Swagger UI**: http://localhost:3000/spec (recommended)
-- **API Root**: http://localhost:3000/
+- **Swagger UI**: http://localhost:3001/spec (recommended)
+- **API Root**: http://localhost:3001/
 
 ## API Endpoints
 
@@ -48,12 +48,12 @@ Main endpoint for generating mock data with customizable field definitions.
 
 **Example - Basic JSON:**
 ```bash
-curl "http://localhost:3000/generate?fields=[{\"name\":\"id\",\"type\":\"uuid\"},{\"name\":\"email\",\"type\":\"email\"}]&count=5"
+cURL "http://localhost:3001/generate?fields=[{\"name\":\"id\",\"type\":\"uuid\"},{\"name\":\"email\",\"type\":\"email\"}]&count=5"
 ```
 
 **Example - With Faker Related Properties:**
 ```bash
-curl "http://localhost:3000/generate?fields=[{\"name\":\"animal\",\"type\":\"string\",\"related\":\"animal.dog\"},{\"name\":\"vehicle\",\"type\":\"string\",\"related\":\"vehicle.bicycle\"}]&count=3"
+cURL "http://localhost:3001/generate?fields=[{\"name\":\"animal\",\"type\":\"string\",\"related\":\"animal.dog\"},{\"name\":\"vehicle\",\"type\":\"string\",\"related\":\"vehicle.bicycle\"}]&count=3"
 ```
 
 ### GET `/types` - List Supported Types
@@ -61,7 +61,7 @@ curl "http://localhost:3000/generate?fields=[{\"name\":\"animal\",\"type\":\"str
 Returns all supported field types for use in field definitions.
 
 ```bash
-curl http://localhost:3000/types
+curl http://localhost:3001/types
 ```
 
 ## Supported Field Types
@@ -75,31 +75,50 @@ curl http://localhost:3000/types
 **Business:** company, job_title, credit_card, hexcolor  
 **Other:** date, boolean, enum (with values array)
 
-## Testing
+## Load Testing (Artillery)
 
-Run the comprehensive test suite:
+You can run load and stress tests against the API using Artillery. The test scripts are located in the `artillery/` directory and target the `/api/generate` and `/api/types` endpoints.
+
+Run locally (requires Artillery installed):
 
 ```bash
-bun test
+# start the server first
+bun run dev
+
+# in another terminal run Artillery
+npm run artillery:stress
 ```
 
-**Test Coverage:**
-- ✅ 43 unit tests
-- ✅ 315+ expect() calls
-- ✅ All 3 endpoints covered
-- ✅ All 25+ field types tested
-- ✅ QS package integration tests
+Run with Docker (no Artillery install required):
 
-## Technology Stack
+```bash
+# start the server first
+bun run dev
 
-- **Framework**: [Elysia.js](https://elysia.js.org/)
-- **Data Generation**: [@faker-js/faker](https://fakerjs.dev/)
-- **Validation**: [Zod](https://zod.dev/)
-- **Query Parsing**: [qs](https://www.npmjs.com/package/qs)
-- **Serialization**: [SuperJSON](https://github.com/blitz-js/superjson)
-- **Documentation**: [@elysiajs/openapi](https://elysia.js.org/plugins/openapi.html)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
+# pre-pull the Artillery image
+npm run artillery:pull
 
-## License
+# run Artillery using Docker
+npm run artillery:stress:docker
+```
 
-MIT
+If you use the `artillery` CLI directly, you can override the `target` in the config, otherwise the scripts will use `http://localhost:3001` by default.
+
+Example commands to run a soak scenario via the CLI:
+
+```bash
+# Run soak scenario using global Artillery CLI
+artillery run artillery/soak.yml
+
+# Run soak scenario using npx
+npx artillery run artillery/soak.yml
+```
+The Artillery scripts ramp load, run a mix of GET and POST traffic, and collect basic thresholds.
+
+Set `TARGET` environment variable to override the target URL (defaults to `http://localhost:3001`):
+
+```bash
+TARGET=http://localhost:3001 npm run artillery:stress
+```
+
+The script ramps virtual users up and runs a mix of GET and POST traffic, validating responses and collecting basic thresholds.

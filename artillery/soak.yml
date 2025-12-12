@@ -1,0 +1,25 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 1200 # 20 minutes
+      arrivalRate: 50
+  defaults:
+    headers:
+      Content-Type: application/json
+scenarios:
+  - name: soak
+    flow:
+      - loop:
+          count: 50
+          steps:
+            - get:
+                url: "/api/generate?fields=[{\"name\":\"id\",\"type\":\"uuid\"}]&count=10"
+            - get:
+                url: "/api/types"
+            - post:
+                url: "/api/generate"
+                json:
+                  fields:
+                    - name: email
+                      type: email
+                  count: 10
