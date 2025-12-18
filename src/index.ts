@@ -1,5 +1,5 @@
-import { openapi } from '@elysiajs/openapi'
 import { logger } from '@chneau/elysia-logger'
+import { openapi } from '@elysiajs/openapi'
 import { Elysia } from 'elysia'
 import qs from 'qs'
 import { z } from 'zod'
@@ -11,6 +11,7 @@ import {
 	SUPPORTED_TYPES,
 	serializeResponse,
 } from './generation'
+import { corsMiddleware } from './middleware/cors'
 
 const api = new Elysia({ prefix: '/api' })
 	.get(
@@ -241,6 +242,7 @@ const api = new Elysia({ prefix: '/api' })
 	)
 
 const app = new Elysia()
+	.use(corsMiddleware)
 	.use(
 		openapi({
 			path: '/spec',
