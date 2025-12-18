@@ -1187,4 +1187,61 @@ describe('Mock API Generator', () => {
 			expect(json.message).toContain('Invalid input')
 		})
 	})
+
+	describe('CORS Headers', () => {
+		it('should include CORS headers in GET response', async () => {
+			const fields = encodeURIComponent(
+				JSON.stringify([{ name: 'id', type: 'uuid' }]),
+			)
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate?fields=${fields}&count=1`),
+			)
+
+			expect(response.status).toBe(200)
+			expect(response.headers.has('access-control-allow-origin')).toBe(true)
+		})
+
+		it('should include CORS headers in POST response', async () => {
+			const payload = { fields: [{ name: 'id', type: 'uuid' }], count: 1 }
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(payload),
+				}),
+			)
+
+			expect(response.status).toBe(200)
+			expect(response.headers.has('access-control-allow-origin')).toBe(true)
+		})
+
+		it('should handle OPTIONS preflight request', async () => {
+			const response = await app.handle(
+				new Request(`${HOST_API}/generate`, {
+					method: 'OPTIONS',
+					headers: {
+						'Access-Control-Request-Method': 'POST',
+						'Access-Control-Request-Headers': 'content-type',
+						Origin: 'http://example.com',
+					},
+				}),
+			)
+
+			expect(response.headers.has('access-control-allow-methods')).toBe(true)
+			expect(response.headers.has('access-control-allow-headers')).toBe(true)
+		})
+
+		it('should set correct CORS headers for cross-origin requests', async () => {
+			const response = await app.handle(
+				new Request(`${HOST_API}/types`, {
+					headers: {
+						Origin: 'http://example.com',
+					},
+				}),
+			)
+
+			expect(response.status).toBe(200)
+			expect(response.headers.has('access-control-allow-origin')).toBe(true)
+		})
+	})
 })
